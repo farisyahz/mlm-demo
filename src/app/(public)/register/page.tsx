@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "~/server/better-auth/client";
@@ -25,10 +25,8 @@ import {
 } from "~/components/ui/select";
 import { Loader2, CheckCircle } from "lucide-react";
 
-export default function RegisterPage() {
+function RegisterForm({ initialRefCode }: { initialRefCode: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const refCode = searchParams.get("ref") ?? "";
 
   const [step, setStep] = useState(1); // 1 = account, 2 = MLM registration
   const [name, setName] = useState("");
@@ -37,7 +35,7 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [position, setPosition] = useState<"left" | "right" | "auto">("auto");
-  const [sponsorCode, setSponsorCode] = useState(refCode);
+  const [sponsorCode, setSponsorCode] = useState(initialRefCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -259,5 +257,28 @@ export default function RegisterPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+function RegisterPageContent() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get("ref") ?? "";
+
+  return <RegisterForm initialRefCode={refCode} />;
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-900 via-blue-950 to-slate-900 px-4 py-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">Memuat...</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <RegisterPageContent />
+    </Suspense>
   );
 }
