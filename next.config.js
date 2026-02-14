@@ -6,6 +6,20 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "files.useyapi.com",
+        pathname: "/**",
+      },
+    ],
+  },
 
   typescript: {
     ignoreBuildErrors: true,
