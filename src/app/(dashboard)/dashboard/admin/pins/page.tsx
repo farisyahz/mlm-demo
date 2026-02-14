@@ -44,7 +44,7 @@ export default function AdminPinsPage() {
         {/* Generate PINs */}
         <Card>
           <CardHeader>
-            <CardTitle>Generate PIN</CardTitle>
+            <CardTitle>Buat PIN</CardTitle>
             <CardDescription>
               PIN registrasi untuk member baru
             </CardDescription>
@@ -68,7 +68,7 @@ export default function AdminPinsPage() {
               {generatePins.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Generate {count} PIN
+              Buat {count} PIN
             </Button>
           </CardContent>
         </Card>
@@ -102,7 +102,7 @@ export default function AdminPinsPage() {
                             : "destructive"
                       }
                     >
-                      {pin.status}
+                      {pin.status === "available" ? "Tersedia" : pin.status === "used" ? "Terpakai" : "Kadaluarsa"}
                     </Badge>
                   </div>
                 </div>

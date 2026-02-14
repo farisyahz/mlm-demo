@@ -24,7 +24,7 @@ export default function CoinsPage() {
         <Card className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm text-yellow-100">
-              <Coins className="h-4 w-4" /> Total Coin
+              <Coins className="h-4 w-4" /> Total Koin
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,7 +93,7 @@ export default function CoinsPage() {
                   {tier.hu}/{tier.hu} HU
                 </span>
                 <span className="font-bold text-yellow-600">
-                  {tier.coins} coin
+                  {tier.coins} koin
                 </span>
               </div>
             ))}
@@ -104,7 +104,7 @@ export default function CoinsPage() {
       {/* Coin History */}
       <Card>
         <CardHeader>
-          <CardTitle>Riwayat Coin</CardTitle>
+          <CardTitle>Riwayat Koin</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -147,7 +147,7 @@ export default function CoinsPage() {
                     }`}
                   >
                     {entry.type === "sold" ? "-" : "+"}
-                    {Number(entry.amount).toLocaleString("id-ID")} coin
+                    {Number(entry.amount).toLocaleString("id-ID")} koin
                   </p>
                   {entry.pricePerCoin && (
                     <p className="text-xs text-muted-foreground">
@@ -159,7 +159,7 @@ export default function CoinsPage() {
             ))}
             {(!coinInfo?.entries || coinInfo.entries.length === 0) && (
               <p className="py-8 text-center text-muted-foreground">
-                Belum ada riwayat coin
+                Belum ada riwayat koin
               </p>
             )}
           </div>

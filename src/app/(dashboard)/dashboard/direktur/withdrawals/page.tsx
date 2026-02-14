@@ -44,12 +44,12 @@ export default function DirekturWithdrawalsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">
         <Shield className="mr-2 inline h-6 w-6" />
-        Final Approval (Direktur Utama)
+        Persetujuan Akhir (Direktur Utama)
       </h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Penarikan Menunggu Approval Final</CardTitle>
+          <CardTitle>Penarikan Menunggu Persetujuan Akhir</CardTitle>
           <CardDescription>
             {approved?.length ?? 0} penarikan telah disetujui Bendahara
           </CardDescription>
@@ -64,7 +64,7 @@ export default function DirekturWithdrawalsPage() {
                       Rp{Number(w.amount).toLocaleString("id-ID")}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {w.member?.user?.name ?? "Unknown"}
+                      {w.member?.user?.name ?? "Tidak diketahui"}
                     </p>
                     <p className="text-sm">
                       {w.bankName} - {w.accountNumber} (a/n {w.accountHolder})
@@ -93,7 +93,7 @@ export default function DirekturWithdrawalsPage() {
                     ) : (
                       <Check className="mr-1 h-4 w-4" />
                     )}
-                    Approve & Transfer
+                    Setujui & Transfer
                   </Button>
                   <Input
                     placeholder="Alasan penolakan"
@@ -123,7 +123,7 @@ export default function DirekturWithdrawalsPage() {
             ))}
             {(!approved || approved.length === 0) && (
               <p className="py-8 text-center text-muted-foreground">
-                Tidak ada penarikan menunggu approval
+                Tidak ada penarikan menunggu persetujuan
               </p>
             )}
           </div>

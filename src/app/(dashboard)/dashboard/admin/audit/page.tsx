@@ -17,7 +17,7 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Audit Log</h1>
+      <h1 className="text-2xl font-bold">Log Audit</h1>
 
       <Card>
         <CardHeader>
@@ -45,8 +45,8 @@ export default function AdminAuditPage() {
                     </Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {(log as any).user?.name ?? "System"} |{" "}
-                    {log.ipAddress ?? "N/A"}
+                    {(log as any).user?.name ?? "Sistem"} |{" "}
+                    {log.ipAddress ?? "Tidak tersedia"}
                   </p>
                 </div>
                 <span className="text-xs text-muted-foreground whitespace-nowrap">

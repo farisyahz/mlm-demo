@@ -29,7 +29,7 @@ export default function StokisPinsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">PIN Stock</h1>
+      <h1 className="text-2xl font-bold">Stok PIN</h1>
 
       <Tabs defaultValue="available">
         <TabsList>
@@ -59,7 +59,7 @@ export default function StokisPinsPage() {
                         {Number(pin.pvValue)} PV | Rp{Number(pin.price).toLocaleString("id-ID")}
                       </p>
                     </div>
-                    <Badge>Available</Badge>
+                    <Badge>Tersedia</Badge>
                   </div>
                 ))}
                 {(!available?.pins || available.pins.length === 0) && (
@@ -93,7 +93,7 @@ export default function StokisPinsPage() {
                         </p>
                       )}
                     </div>
-                    <Badge variant="secondary">Used</Badge>
+                    <Badge variant="secondary">Terpakai</Badge>
                   </div>
                 ))}
                 {(!used?.pins || used.pins.length === 0) && (

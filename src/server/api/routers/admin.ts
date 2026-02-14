@@ -15,6 +15,8 @@ import {
   rewards,
   auditLog,
   user,
+  products,
+  notifications,
 } from "~/server/db/schema";
 import { nanoid } from "~/lib/nanoid";
 
@@ -230,6 +232,123 @@ export const adminRouter = createTRPCRouter({
         orderBy: desc(auditLog.createdAt),
         with: { user: true },
       });
+    }),
+
+  /** List products pending approval */
+  listPendingProducts: adminProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        offset: z.number().min(0).default(0),
+        status: z.enum(["pending", "approved", "rejected"]).optional().default("pending"),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const conditions = [];
+      if (input.status) conditions.push(eq(products.approvalStatus, input.status));
+
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const items = await ctx.db.query.products.findMany({
+        where,
+        with: { warung: { with: { user: true } } },
+        limit: input.limit,
+        offset: input.offset,
+        orderBy: desc(products.createdAt),
+      });
+
+      const countResult = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(products)
+        .where(where);
+
+      return { products: items, total: Number(countResult[0]?.count ?? 0) };
+    }),
+
+  /** Approve a product */
+  approveProduct: adminProcedure
+    .input(z.object({ productId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const product = await ctx.db.query.products.findFirst({
+        where: eq(products.id, input.productId),
+      });
+
+      if (!product) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Produk tidak ditemukan" });
+      }
+
+      const [updated] = await ctx.db
+        .update(products)
+        .set({
+          approvalStatus: "approved",
+          approvedById: ctx.memberProfile.id,
+        })
+        .where(eq(products.id, input.productId))
+        .returning();
+
+      // Notify product owner
+      await ctx.db.insert(notifications).values({
+        memberId: product.warungMemberId,
+        title: "Produk Disetujui!",
+        message: `Produk "${product.name}" telah disetujui dan sekarang tampil di halaman belanja.`,
+        type: "system",
+      });
+
+      // Audit log
+      await ctx.db.insert(auditLog).values({
+        userId: ctx.session.user.id,
+        action: "approve_product",
+        entity: "products",
+        entityId: input.productId,
+      });
+
+      return updated;
+    }),
+
+  /** Reject a product */
+  rejectProduct: adminProcedure
+    .input(
+      z.object({
+        productId: z.number(),
+        reason: z.string().min(1, "Alasan penolakan wajib diisi"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const product = await ctx.db.query.products.findFirst({
+        where: eq(products.id, input.productId),
+      });
+
+      if (!product) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Produk tidak ditemukan" });
+      }
+
+      const [updated] = await ctx.db
+        .update(products)
+        .set({
+          approvalStatus: "rejected",
+          rejectionReason: input.reason,
+        })
+        .where(eq(products.id, input.productId))
+        .returning();
+
+      // Notify product owner
+      await ctx.db.insert(notifications).values({
+        memberId: product.warungMemberId,
+        title: "Produk Ditolak",
+        message: `Produk "${product.name}" ditolak. Alasan: ${input.reason}`,
+        type: "system",
+      });
+
+      // Audit log
+      await ctx.db.insert(auditLog).values({
+        userId: ctx.session.user.id,
+        action: "reject_product",
+        entity: "products",
+        entityId: input.productId,
+        newValue: JSON.stringify({ reason: input.reason }),
+      });
+
+      return updated;
     }),
 
   /** Create stokis */

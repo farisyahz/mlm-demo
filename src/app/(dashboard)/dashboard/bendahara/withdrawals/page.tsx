@@ -44,7 +44,7 @@ export default function BendaharaWithdrawalsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Penarikan Pending</CardTitle>
+          <CardTitle>Penarikan Tertunda</CardTitle>
           <CardDescription>
             {pending?.length ?? 0} penarikan menunggu persetujuan
           </CardDescription>
@@ -59,7 +59,7 @@ export default function BendaharaWithdrawalsPage() {
                       Rp{Number(w.amount).toLocaleString("id-ID")}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {w.member?.user?.name ?? "Unknown"} |{" "}
+                      {w.member?.user?.name ?? "Tidak diketahui"} |{" "}
                       {w.bankName} - {w.accountNumber}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -69,7 +69,7 @@ export default function BendaharaWithdrawalsPage() {
                       {format(new Date(w.createdAt), "dd/MM/yyyy HH:mm")}
                     </p>
                   </div>
-                  <Badge>Pending</Badge>
+                  <Badge>Tertunda</Badge>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                   <Button
@@ -115,7 +115,7 @@ export default function BendaharaWithdrawalsPage() {
             ))}
             {(!pending || pending.length === 0) && (
               <p className="py-8 text-center text-muted-foreground">
-                Tidak ada penarikan pending
+                Tidak ada penarikan tertunda
               </p>
             )}
           </div>

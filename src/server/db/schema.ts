@@ -107,6 +107,23 @@ export const notificationTypeEnum = pgEnum("notification_type", [
 
 export const periodTypeEnum = pgEnum("period_type", ["daily", "biweekly"]);
 
+export const productApprovalEnum = pgEnum("product_approval", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+
+export const pvPurchaseStatusEnum = pgEnum("pv_purchase_status", [
+  "pending",
+  "confirmed",
+  "rejected",
+]);
+
+export const pvPaymentMethodEnum = pgEnum("pv_payment_method", [
+  "wallet",
+  "manual_transfer",
+]);
+
 // ---------------------------------------------------------------------------
 // Better Auth tables (managed by Better Auth – do NOT add mlm_ prefix)
 // ---------------------------------------------------------------------------
@@ -555,6 +572,14 @@ export const stokis = createTable(
       .numeric("pv_stock", { precision: 14, scale: 2 })
       .notNull()
       .default("0"),
+    totalCommission: d
+      .numeric("total_commission", { precision: 14, scale: 2 })
+      .notNull()
+      .default("0"),
+    commissionRate: d
+      .numeric("commission_rate", { precision: 5, scale: 2 })
+      .notNull()
+      .default("10"),
     createdAt: d
       .timestamp("created_at", { withTimezone: true })
       .$defaultFn(() => new Date())
@@ -563,6 +588,44 @@ export const stokis = createTable(
   (t) => [
     uniqueIndex("stokis_member_idx").on(t.memberId),
     uniqueIndex("stokis_number_idx").on(t.stokisNumber),
+  ],
+);
+
+// ---------------------------------------------------------------------------
+// PV Purchases (member buys PV from stokis)
+// ---------------------------------------------------------------------------
+export const pvPurchases = createTable(
+  "pv_purchases",
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    memberId: d
+      .integer("member_id")
+      .notNull()
+      .references(() => memberProfiles.id),
+    stokisId: d
+      .integer("stokis_id")
+      .notNull()
+      .references(() => stokis.id),
+    pvAmount: d
+      .numeric("pv_amount", { precision: 12, scale: 2 })
+      .notNull(),
+    rupiahAmount: d
+      .numeric("rupiah_amount", { precision: 14, scale: 2 })
+      .notNull(),
+    status: pvPurchaseStatusEnum().notNull().default("pending"),
+    paymentMethod: pvPaymentMethodEnum("payment_method").notNull(),
+    confirmedAt: d.timestamp("confirmed_at", { withTimezone: true }),
+    rejectedAt: d.timestamp("rejected_at", { withTimezone: true }),
+    rejectionReason: d.text("rejection_reason"),
+    createdAt: d
+      .timestamp("created_at", { withTimezone: true })
+      .$defaultFn(() => new Date())
+      .notNull(),
+  }),
+  (t) => [
+    index("pv_purchases_member_idx").on(t.memberId),
+    index("pv_purchases_stokis_idx").on(t.stokisId),
+    index("pv_purchases_status_idx").on(t.status),
   ],
 );
 
@@ -584,6 +647,13 @@ export const products = createTable(
     imageUrl: d.text("image_url"),
     category: d.varchar({ length: 100 }),
     isActive: d.boolean("is_active").notNull().default(true),
+    approvalStatus: productApprovalEnum("approval_status")
+      .notNull()
+      .default("pending"),
+    rejectionReason: d.text("rejection_reason"),
+    approvedById: d
+      .integer("approved_by_id")
+      .references(() => memberProfiles.id),
     createdAt: d
       .timestamp("created_at", { withTimezone: true })
       .$defaultFn(() => new Date())
@@ -596,6 +666,7 @@ export const products = createTable(
     index("products_warung_idx").on(t.warungMemberId),
     index("products_category_idx").on(t.category),
     index("products_active_idx").on(t.isActive),
+    index("products_approval_idx").on(t.approvalStatus),
   ],
 );
 
@@ -912,6 +983,7 @@ export const stokisRelations = relations(stokis, ({ one, many }) => ({
     references: [memberProfiles.id],
   }),
   pins: many(pins),
+  pvPurchases: many(pvPurchases),
 }));
 
 // -- PIN relations --
@@ -1013,5 +1085,17 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
   user: one(user, {
     fields: [auditLog.userId],
     references: [user.id],
+  }),
+}));
+
+// -- PV Purchases relations --
+export const pvPurchaseRelations = relations(pvPurchases, ({ one }) => ({
+  member: one(memberProfiles, {
+    fields: [pvPurchases.memberId],
+    references: [memberProfiles.id],
+  }),
+  stokis: one(stokis, {
+    fields: [pvPurchases.stokisId],
+    references: [stokis.id],
   }),
 }));

@@ -36,6 +36,7 @@ import {
   ArrowDownToLine,
   Building2,
   KeyRound,
+  Banknote,
 } from "lucide-react";
 
 interface AppSidebarProps {
@@ -68,13 +69,14 @@ function getNavItems(role: string): { label: string; items: NavItem[] }[] {
   ];
 
   const stokisNav: NavItem[] = [
-    { title: "Stokis Dashboard", href: "/dashboard/stokis", icon: Building2 },
-    { title: "PIN Stock", href: "/dashboard/stokis/pins", icon: KeyRound },
+    { title: "Dashboard Stokis", href: "/dashboard/stokis", icon: Building2 },
+    { title: "Stok PIN", href: "/dashboard/stokis/pins", icon: KeyRound },
+    { title: "Omset & Komisi", href: "/dashboard/stokis/commission", icon: Banknote },
   ];
 
   const bendaharaNav: NavItem[] = [
     {
-      title: "Penarikan Pending",
+      title: "Penarikan Tertunda",
       href: "/dashboard/bendahara/withdrawals",
       icon: CreditCard,
     },
@@ -82,19 +84,20 @@ function getNavItems(role: string): { label: string; items: NavItem[] }[] {
 
   const direkturNav: NavItem[] = [
     {
-      title: "Approval Penarikan",
+      title: "Persetujuan Penarikan",
       href: "/dashboard/direktur/withdrawals",
       icon: Shield,
     },
   ];
 
   const adminNav: NavItem[] = [
-    { title: "Admin Dashboard", href: "/dashboard/admin", icon: BarChart3 },
-    { title: "Kelola Member", href: "/dashboard/admin/members", icon: Users },
+    { title: "Dashboard Admin", href: "/dashboard/admin", icon: BarChart3 },
+    { title: "Kelola Anggota", href: "/dashboard/admin/members", icon: Users },
+    { title: "Kelola Produk", href: "/dashboard/admin/products", icon: Package },
     { title: "Kelola PIN", href: "/dashboard/admin/pins", icon: KeyRound },
     { title: "Kelola Stokis", href: "/dashboard/admin/stokis", icon: Building2 },
     { title: "Omset Nasional", href: "/dashboard/admin/turnover", icon: BarChart3 },
-    { title: "Audit Log", href: "/dashboard/admin/audit", icon: FileText },
+    { title: "Log Audit", href: "/dashboard/admin/audit", icon: FileText },
     { title: "Pengaturan", href: "/dashboard/admin/settings", icon: Settings },
   ];
 

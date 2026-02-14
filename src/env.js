@@ -26,6 +26,9 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: z.string().optional(),
     // App
     APP_URL: z.string().url().default("http://localhost:3000"),
+    CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+    CLOUDFLARE_ACCESS_KEY_ID: z.string().optional(),
+    CLOUDFLARE_SECRET_ACCESS_KEY: z.string().optional(),
   },
 
   /**
@@ -55,6 +58,9 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     APP_URL: process.env.APP_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_ACCESS_KEY_ID: process.env.CLOUDFLARE_ACCESS_KEY_ID,
+    CLOUDFLARE_SECRET_ACCESS_KEY: process.env.CLOUDFLARE_SECRET_ACCESS_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

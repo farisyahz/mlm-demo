@@ -96,7 +96,7 @@ export default function DashboardPage() {
               Rp{Number(wallet?.mainBalance ?? 0).toLocaleString("id-ID")}
             </div>
             <p className="text-xs text-muted-foreground">
-              Frozen: Rp{Number(wallet?.frozenBalance ?? 0).toLocaleString("id-ID")}
+              Dibekukan: Rp{Number(wallet?.frozenBalance ?? 0).toLocaleString("id-ID")}
             </p>
           </CardContent>
         </Card>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">
               {Number(wallet?.coinBalance ?? 0).toLocaleString("id-ID")}
             </div>
-            <p className="text-xs text-muted-foreground">Coin</p>
+            <p className="text-xs text-muted-foreground">Koin</p>
           </CardContent>
         </Card>
 
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold">
               {stats?.directRecruitCount ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground">Member</p>
+            <p className="text-xs text-muted-foreground">Anggota</p>
           </CardContent>
         </Card>
       </div>

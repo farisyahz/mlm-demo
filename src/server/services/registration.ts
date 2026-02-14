@@ -9,6 +9,7 @@ import {
   transactions,
   nationalTurnover,
   notifications,
+  stokis,
 } from "~/server/db/schema";
 import { placeInTree, autoPlace } from "~/server/services/binary-tree";
 import { calculateSponsorBonus } from "~/server/services/bonuses/sponsor-bonus";
@@ -156,6 +157,54 @@ export async function registerMember(
     description: `Registrasi member dengan PIN ${pin.pin}`,
     status: "completed",
   });
+
+  // 9b. Credit stokis commission for PIN sale
+  if (pin.stokisId) {
+    const stokisProfile = await db.query.stokis.findFirst({
+      where: eq(stokis.id, pin.stokisId),
+    });
+
+    if (stokisProfile) {
+      const commissionRate = Number(stokisProfile.commissionRate);
+      const pinPrice = Number(pin.price);
+      const commission = (pinPrice * commissionRate) / 100;
+
+      if (commission > 0) {
+        // Credit commission to stokis wallet
+        await db
+          .update(wallets)
+          .set({
+            mainBalance: sql`${wallets.mainBalance} + ${commission}`,
+          })
+          .where(eq(wallets.memberId, stokisProfile.memberId));
+
+        // Update total commission
+        await db
+          .update(stokis)
+          .set({
+            totalCommission: sql`${stokis.totalCommission} + ${commission}`,
+          })
+          .where(eq(stokis.id, stokisProfile.id));
+
+        // Record commission transaction
+        await db.insert(transactions).values({
+          memberId: stokisProfile.memberId,
+          type: "bonus_credit",
+          amount: String(commission),
+          description: `Komisi penjualan PIN: ${commissionRate}% dari Rp${pinPrice.toLocaleString("id-ID")}`,
+          status: "completed",
+        });
+
+        // Notify stokis
+        await db.insert(notifications).values({
+          memberId: stokisProfile.memberId,
+          title: "Komisi PIN Diterima",
+          message: `PIN ${pin.pin} telah digunakan. Komisi Rp${commission.toLocaleString("id-ID")} dikreditkan ke dompet Anda.`,
+          type: "system",
+        });
+      }
+    }
+  }
 
   // 10. Add to national turnover
   await addToNationalTurnover(pvValue);

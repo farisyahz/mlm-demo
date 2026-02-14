@@ -13,8 +13,10 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Badge } from "~/components/ui/badge";
-import { Loader2, Store, Plus } from "lucide-react";
+import { Loader2, Store, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { useUploadFiles } from "@better-upload/client";
+import { UploadDropzone } from "~/components/ui/upload-dropzone";
 
 export default function MyShopPage() {
   const { data: profile } = api.member.getMyProfile.useQuery();
@@ -37,6 +39,22 @@ export default function MyShopPage() {
   const [productPV, setProductPV] = useState("");
   const [productDesc, setProductDesc] = useState("");
   const [productCategory, setProductCategory] = useState("");
+  const [productImageUrl, setProductImageUrl] = useState("");
+
+  const uploader = useUploadFiles({
+    route: "images",
+    onUploadComplete: ({ files }) => {
+      if (files.length > 0) {
+        const key = files[0]!.objectInfo.key;
+        const url = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? ""}/${key}`;
+        setProductImageUrl(url);
+        toast.success("Gambar berhasil diunggah!");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Gagal mengunggah gambar");
+    },
+  });
 
   const createProduct = api.product.create.useMutation({
     onSuccess: () => {
@@ -46,6 +64,7 @@ export default function MyShopPage() {
       setProductPV("");
       setProductDesc("");
       setProductCategory("");
+      setProductImageUrl("");
       utils.product.getMyProducts.invalidate();
     },
     onError: (err) => toast.error(err.message),
@@ -119,6 +138,7 @@ export default function MyShopPage() {
                   pvValue: Number(productPV),
                   description: productDesc || undefined,
                   category: productCategory || undefined,
+                  imageUrl: productImageUrl || undefined,
                 });
               }}
             >
@@ -165,6 +185,37 @@ export default function MyShopPage() {
                   placeholder="contoh: makanan, minuman, PPOB"
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Gambar Produk</Label>
+                {productImageUrl ? (
+                  <div className="relative">
+                    <img
+                      src={productImageUrl}
+                      alt="Preview"
+                      className="h-40 w-full rounded-lg object-cover"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute right-2 top-2 h-6 w-6"
+                      onClick={() => setProductImageUrl("")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <UploadDropzone
+                    control={uploader.control}
+                    accept="image/*"
+                    description={{
+                      fileTypes: "gambar (JPG, PNG, WebP)",
+                      maxFiles: 1,
+                      maxFileSize: "5MB",
+                    }}
+                  />
+                )}
+              </div>
               <Button
                 type="submit"
                 className="w-full"
@@ -192,9 +243,16 @@ export default function MyShopPage() {
               {products?.map((p) => (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between rounded-lg border p-3"
+                  className="flex items-center gap-3 rounded-lg border p-3"
                 >
-                  <div>
+                  {p.imageUrl && (
+                    <img
+                      src={p.imageUrl}
+                      alt={p.name}
+                      className="h-12 w-12 rounded object-cover"
+                    />
+                  )}
+                  <div className="flex-1">
                     <p className="font-medium">{p.name}</p>
                     <p className="text-xs text-muted-foreground">
                       Rp{Number(p.price).toLocaleString("id-ID")} | {Number(p.pvValue)} PV

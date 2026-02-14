@@ -29,12 +29,12 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold">Dashboard Admin</h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Member</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Anggota</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -93,10 +93,10 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button asChild>
-            <Link href="/dashboard/admin/pins">Generate PIN</Link>
+            <Link href="/dashboard/admin/pins">Buat PIN</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/dashboard/admin/members">Kelola Member</Link>
+            <Link href="/dashboard/admin/members">Kelola Anggota</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/dashboard/admin/stokis">Kelola Stokis</Link>
@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
             <Link href="/dashboard/admin/turnover">Omset Nasional</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/dashboard/admin/audit">Audit Log</Link>
+            <Link href="/dashboard/admin/audit">Log Audit</Link>
           </Button>
         </CardContent>
       </Card>

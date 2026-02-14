@@ -55,20 +55,20 @@ export default function WalletPage() {
             <div className="text-3xl font-bold">
               {Number(wallet?.coinBalance ?? 0).toLocaleString("id-ID")}
             </div>
-            <p className="text-xs text-muted-foreground">Coin</p>
+            <p className="text-xs text-muted-foreground">Koin</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">PV Stock</CardTitle>
+            <CardTitle className="text-sm font-medium">Stok PV</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">
               {Number(wallet?.pvStockBalance ?? 0).toLocaleString("id-ID")}
             </div>
             <p className="text-xs text-muted-foreground">
-              Frozen: Rp{Number(wallet?.frozenBalance ?? 0).toLocaleString("id-ID")}
+              Dibekukan: Rp{Number(wallet?.frozenBalance ?? 0).toLocaleString("id-ID")}
             </p>
           </CardContent>
         </Card>

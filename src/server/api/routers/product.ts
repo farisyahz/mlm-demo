@@ -9,7 +9,7 @@ import {
 import { products, memberProfiles } from "~/server/db/schema";
 
 export const productRouter = createTRPCRouter({
-  /** List active products (public) */
+  /** List active and approved products (public) */
   list: publicProcedure
     .input(
       z.object({
@@ -19,7 +19,10 @@ export const productRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const conditions = [eq(products.isActive, true)];
+      const conditions = [
+        eq(products.isActive, true),
+        eq(products.approvalStatus, "approved"),
+      ];
       if (input.category)
         conditions.push(eq(products.category, input.category));
 
@@ -59,6 +62,15 @@ export const productRouter = createTRPCRouter({
         });
       }
 
+      // Validate PV ratio: 1 PV = Rp1.000, PV cannot exceed price/1000
+      const maxPV = input.price / 1000;
+      if (input.pvValue > maxPV) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Nilai PV tidak boleh melebihi ${maxPV} (rasio 1 PV = Rp1.000). Harga Rp${input.price.toLocaleString("id-ID")} maksimal ${maxPV} PV.`,
+        });
+      }
+
       const [created] = await ctx.db
         .insert(products)
         .values({
@@ -69,6 +81,7 @@ export const productRouter = createTRPCRouter({
           pvValue: String(input.pvValue),
           imageUrl: input.imageUrl,
           category: input.category,
+          approvalStatus: "pending",
         })
         .returning();
 
@@ -99,6 +112,17 @@ export const productRouter = createTRPCRouter({
 
       if (!product) {
         throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      // Validate PV ratio if both price and pvValue are updated
+      const effectivePrice = input.price ?? Number(product.price);
+      const effectivePV = input.pvValue ?? Number(product.pvValue);
+      const maxPV = effectivePrice / 1000;
+      if (effectivePV > maxPV) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Nilai PV tidak boleh melebihi ${maxPV} (rasio 1 PV = Rp1.000).`,
+        });
       }
 
       const { id, ...updateData } = input;
