@@ -16,6 +16,7 @@ import { calculateSponsorBonus } from "~/server/services/bonuses/sponsor-bonus";
 import { calculatePersonalBonus } from "~/server/services/bonuses/personal-bonus";
 import { addToNationalTurnover } from "~/server/services/wallet";
 import { propagatePVUp } from "~/server/services/binary-tree";
+import { creditStokisCommission } from "~/server/services/stokis-commission";
 import { nanoid } from "~/lib/nanoid";
 
 interface RegisterMemberParams {
@@ -158,51 +159,20 @@ export async function registerMember(
     status: "completed",
   });
 
-  // 9b. Credit stokis commission for PIN sale
+  // 9b. Credit stokis tiered commission for PIN sale
+  // PIN mengandung PV, PV tersebut dihitung sebagai penjualan stokis
   if (pin.stokisId) {
     const stokisProfile = await db.query.stokis.findFirst({
       where: eq(stokis.id, pin.stokisId),
     });
 
     if (stokisProfile) {
-      const commissionRate = Number(stokisProfile.commissionRate);
-      const pinPrice = Number(pin.price);
-      const commission = (pinPrice * commissionRate) / 100;
-
-      if (commission > 0) {
-        // Credit commission to stokis wallet
-        await db
-          .update(wallets)
-          .set({
-            mainBalance: sql`${wallets.mainBalance} + ${commission}`,
-          })
-          .where(eq(wallets.memberId, stokisProfile.memberId));
-
-        // Update total commission
-        await db
-          .update(stokis)
-          .set({
-            totalCommission: sql`${stokis.totalCommission} + ${commission}`,
-          })
-          .where(eq(stokis.id, stokisProfile.id));
-
-        // Record commission transaction
-        await db.insert(transactions).values({
-          memberId: stokisProfile.memberId,
-          type: "bonus_credit",
-          amount: String(commission),
-          description: `Komisi penjualan PIN: ${commissionRate}% dari Rp${pinPrice.toLocaleString("id-ID")}`,
-          status: "completed",
-        });
-
-        // Notify stokis
-        await db.insert(notifications).values({
-          memberId: stokisProfile.memberId,
-          title: "Komisi PIN Diterima",
-          message: `PIN ${pin.pin} telah digunakan. Komisi Rp${commission.toLocaleString("id-ID")} dikreditkan ke dompet Anda.`,
-          type: "system",
-        });
-      }
+      await creditStokisCommission(
+        db,
+        stokisProfile,
+        pvValue, // PV dari PIN dihitung sebagai penjualan stokis
+        `Penjualan PIN ${pin.pin}`,
+      );
     }
   }
 

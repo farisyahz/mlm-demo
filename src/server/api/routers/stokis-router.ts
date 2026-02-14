@@ -18,6 +18,11 @@ import {
 import { addToNationalTurnover } from "~/server/services/wallet";
 import { propagatePVUp } from "~/server/services/binary-tree";
 import { calculatePersonalBonus } from "~/server/services/bonuses/personal-bonus";
+import {
+  creditStokisCommission,
+  getCommissionBreakdown,
+  getCurrentTierInfo,
+} from "~/server/services/stokis-commission";
 
 export const stokisRouter = createTRPCRouter({
   /** Get stokis profile */
@@ -171,6 +176,14 @@ export const stokisRouter = createTRPCRouter({
         // Process the PV credit
         await processPVCredit(ctx.db, ctx.memberProfile.id, input.pvAmount, stokisProfile);
 
+        // Credit tiered commission to stokis
+        await creditStokisCommission(
+          ctx.db,
+          stokisProfile,
+          input.pvAmount,
+          "Penjualan PV (saldo dompet)",
+        );
+
         return purchase;
       }
 
@@ -269,37 +282,13 @@ export const stokisRouter = createTRPCRouter({
       // Process the PV credit
       await processPVCredit(ctx.db, purchase.memberId, pvAmount, stokisProfile);
 
-      // Calculate stokis commission
-      const commissionRate = Number(stokisProfile.commissionRate);
-      const rupiahAmount = Number(purchase.rupiahAmount);
-      const commission = (rupiahAmount * commissionRate) / 100;
-
-      if (commission > 0) {
-        // Credit commission to stokis wallet
-        await ctx.db
-          .update(wallets)
-          .set({
-            mainBalance: sql`${wallets.mainBalance} + ${commission}`,
-          })
-          .where(eq(wallets.memberId, stokisProfile.memberId));
-
-        // Update total commission
-        await ctx.db
-          .update(stokis)
-          .set({
-            totalCommission: sql`${stokis.totalCommission} + ${commission}`,
-          })
-          .where(eq(stokis.id, stokisProfile.id));
-
-        // Record commission transaction
-        await ctx.db.insert(transactions).values({
-          memberId: stokisProfile.memberId,
-          type: "bonus_credit",
-          amount: String(commission),
-          description: `Komisi penjualan PV: ${commissionRate}% dari Rp${rupiahAmount.toLocaleString("id-ID")}`,
-          status: "completed",
-        });
-      }
+      // Credit tiered commission to stokis
+      await creditStokisCommission(
+        ctx.db,
+        stokisProfile,
+        pvAmount,
+        "Penjualan PV (transfer manual)",
+      );
 
       // Notify member
       await ctx.db.insert(notifications).values({
@@ -411,11 +400,16 @@ export const stokisRouter = createTRPCRouter({
         eq(pins.status, "used"),
       ));
 
+    const totalPVSold = Number(stokisProfile.totalPVSold);
+    const tierBreakdown = getCommissionBreakdown(totalPVSold);
+    const currentTier = getCurrentTierInfo(totalPVSold);
+
     return {
       totalCommission: stokisProfile.totalCommission,
-      commissionRate: stokisProfile.commissionRate,
-      totalPVSold: Number(pvSoldResult[0]?.total ?? 0),
+      totalPVSold,
       totalPINsUsed: Number(pinsUsedResult[0]?.count ?? 0),
+      currentTier,
+      tierBreakdown,
       commissionHistory: commissionTxns,
       pvSalesHistory: confirmedPurchases,
     };

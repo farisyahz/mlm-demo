@@ -122,7 +122,7 @@ export default function StokisDashboardPage() {
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Rate: {Number(stokisProfile.commissionRate)}%
+                  PV Terjual: {Number(stokisProfile.totalPVSold).toLocaleString("id-ID")}
                 </p>
               </CardContent>
             </Card>

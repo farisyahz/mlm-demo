@@ -576,6 +576,10 @@ export const stokis = createTable(
       .numeric("total_commission", { precision: 14, scale: 2 })
       .notNull()
       .default("0"),
+    totalPVSold: d
+      .numeric("total_pv_sold", { precision: 14, scale: 2 })
+      .notNull()
+      .default("0"),
     commissionRate: d
       .numeric("commission_rate", { precision: 5, scale: 2 })
       .notNull()
